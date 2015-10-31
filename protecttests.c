@@ -1,4 +1,3 @@
-#include "types.h"
 #include "stat.h"
 #include "user.h"
 #include "fcntl.h"
@@ -19,9 +18,27 @@ int ppid;
    exit(); \
 }
 
+int mprotect(void *addr, int len) {
+	if ((int)addr%PGSIZE != 0 || (int)addr > proc->sz) {  //addr too large
+		return -1;
+	}
+	if (len <= 0 || len > (int)addr) {		
+		return -1;
+	}
+	return 0;
+}
+
+int munprotect(void *addr, int len) {
+	if ((int)addr%PGSIZE != 0 || (int)addr > proc->sz) {
+		return -1;
+	}
+	return 0;
+}
+
 int
 main(int argc, char *argv[])
 {
+
   ppid = getpid();
 
   char *brk = sbrk(0);
@@ -72,5 +89,6 @@ main(int argc, char *argv[])
   }
 
    printf(1, "TEST PASSED\n");
+
    exit();
 }
