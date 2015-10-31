@@ -316,7 +316,7 @@ copyuvm(pde_t *pgdir, uint sz)
 
   if((d = setupkvm()) == 0)
     return 0;
-  for(i = 0; i < sz; i += PGSIZE){
+  for(i = PGSIZE; i < sz; i += PGSIZE){   //change i to PGSIZE 
     if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
       panic("copyuvm: pte should exist");
     if(!(*pte & PTE_P))
@@ -376,7 +376,6 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
   }
   return 0;
 }
-
 //PAGEBREAK!
 // Blank page.
 //PAGEBREAK!
@@ -384,3 +383,28 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 //PAGEBREAK!
 // Blank page.
 
+int do_mprotect(struct proc *p, void *addr) {
+	pte_t* pte;
+	pte = walkpgdir(p->pgdir,addr, 0);
+		if (pte == 0) {					//error
+			return -1;
+		}
+		else {
+			*pte &= ~PTE_W;
+		}
+	return 0;
+	}
+}
+
+int do_munprotect(struct proc *p, void *addr) {
+		pte_t* pte;
+		pte = walkpgdir(p->pgdir,addr, 0);
+		if (pte == 0) {
+			return -1;
+		}
+		else {
+			*pte |= PTE_W;
+		}
+		return 0;
+	}
+}
