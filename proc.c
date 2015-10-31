@@ -464,3 +464,62 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+
+int kern_mprotect(struct proc* p, void *addr, int len) {
+	unsigned int start = (unsigned int) addr;
+
+	if (addr == 0) {				//null address
+		return -1;
+	}
+	if (start % PGSIZE != 0) {
+		return -1;
+	}
+	if (start > p->sz) {
+		return -1;
+	}
+	if (len <= 0) {
+		return -1;
+	}
+	if ((start + PGSIZE*len) > p->sz) {
+		return -1;
+	}
+
+	int i;
+	for (int i = start; i < start + (len*PGSIZE); i+=PGSIZE) {
+		if (do_mprotect(p,i) == -1)  {
+				return -1;
+		}
+	}
+	return 0;
+}
+
+
+int kern_munprotect(struct proc *p, void* addr, int len) {
+	unsigned int start = (unsigned int) addr;
+
+	//check for bounds
+	if (addr == 0) {			 //null address
+		return -1;
+	}
+	if (start%PGSIZE != 0) {
+		return -1;
+	}
+	if (start > p->sz) {
+		return -1;
+	}
+	if (len <= 0) {
+		return -1;
+	}
+	if ((start + PGSIZE*len) > p->sz) {
+		return -1;
+	}
+
+
+	for (int i = 0; i < start + (len*PGSIZE); i+=PGSIZE) {
+		if (do_munprotect(p,i) == -1) {
+			return -1;
+		}
+	}
+	return 0;
+}
